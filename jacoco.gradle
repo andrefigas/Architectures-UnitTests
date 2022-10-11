@@ -29,8 +29,6 @@ ext.excludes = [
 def createVariantCoverage(variant) {
     def variantName = variant.name
 
-    println()
-
     def testTaskName = "test${variantName.capitalize()}UnitTest"
 
     // Add unit test coverage tasks
@@ -93,39 +91,5 @@ def createVariantCoverage(variant) {
                 "$project.projectDir/src/${variantName}/kotlin"
         ]))
         getExecutionData().setFrom(files("${project.buildDir}/outputs/unit_test_code_coverage/${variantName}UnitTest/${testTaskName}.exec"))
-    }
-}
-
-
-task jacocoTestReport(type: JacocoReport, dependsOn: "connectedDebugAndroidTest") {
-    group = "Reporting"
-    description = "Generate Jacoco coverage reports after running tests."
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-    getClassDirectories().setFrom(fileTree(
-            dir: './build/intermediates/classes/debug',
-            excludes: ['**/R*.class',
-                       '**/Foo.*',
-                       '**/*$InjectAdapter.class',
-                       '**/*$ModuleAdapter.class',
-                       '**/*$ViewInjector*.class'
-            ]))
-    // If you have rs/aidl etc... add them here.
-    def coverageSourceDirs = [
-            'src/main/java',
-    ]
-
-    getSourceDirectories().setFrom(files(coverageSourceDirs))
-    getExecutionData().setFrom(files("$buildDir/jacoco/testDebug.exec"))
-    // Bit hacky but fixes https://code.google.com/p/android/issues/detail?id=69174.
-    // We iterate through the compiled .class tree and rename $$ to $.
-    doFirst {
-        new File("$buildDir/intermediates/classes/").eachFileRecurse { file ->
-            if (file.name.contains('$$')) {
-                file.renameTo(file.path.replace('$$', '$'))
-            }
-        }
     }
 }
