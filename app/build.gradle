@@ -1,0 +1,233 @@
+
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+apply from: "$project.rootDir/jacoco.gradle"
+
+android {
+    compileSdk 32
+    testBuildType "_"
+
+    defaultConfig {
+        applicationId "dev.figas"
+        minSdk 21
+        targetSdk 32
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
+    flavorDimensions "default"
+
+    buildTypes {
+        _{
+            debuggable true
+            signingConfig signingConfigs.debug
+        }
+
+    }
+
+    productFlavors {
+        mvc{resValue 'string', 'app_name', 'MVC'}
+        mvp{resValue 'string', 'app_name', 'MVP'}
+        mvvm{resValue 'string', 'app_name', 'MVVM'}
+        mvc_clean{resValue 'string', 'app_name', 'MVC Clean'}
+        mvp_clean{resValue 'string', 'app_name', 'MVP Clean'}
+        mvvm_clean{resValue 'string', 'app_name', 'MVVM Clean'}
+        mvi_with_presenter{resValue 'string', 'app_name', 'MVI with Presenter'}
+        mvi_with_presenter_clean{resValue 'string', 'app_name', 'MVI with Presenter Clean'}
+        mvi_with_viewmodel{resValue 'string', 'app_name', 'MVI with ViewModel'}
+        mvi_with_viewmodel_clean{resValue 'string', 'app_name', 'MVI with ViewModel Clean'}
+        mvi_with_viper{resValue 'string', 'app_name', 'MVI with Viper'}
+        mvi_with_viper_clean{resValue 'string', 'app_name', 'MVI with Viper Clean'}
+        viper{resValue 'string', 'app_name', 'Viper'}
+        viper_clean{resValue 'string', 'app_name', 'Viper Clean'}
+    }
+
+    variantFilter { variant ->
+        if (variant.buildType.name == "release" || variant.buildType.name == "debug") {
+            setIgnore(true)
+        }
+
+    }
+
+    sourceSets {
+
+        mvc {
+            java.srcDirs = ['/src/main/java','../flavors/mvc/java', '../flavors/model/java']
+            manifest.srcFile '../flavors/mvc/AndroidManifest.xml'
+        }
+
+        testMvc {
+            java.srcDirs = ['../flavors/model/test']
+        }
+
+        mvp {
+            java.srcDirs = ['/src/main/java','../flavors/mvp/java', '../flavors/model/java']
+            manifest.srcFile '../flavors/mvp/AndroidManifest.xml'
+        }
+
+        testMvp{
+            java.srcDirs = ['../flavors/model/test','../flavors/mvp/test']
+        }
+
+        mvvm{
+            java.srcDirs = ['/src/main/java','../flavors/mvvm/java', '../flavors/model/java']
+            manifest.srcFile '../flavors/mvvm/AndroidManifest.xml'
+        }
+
+        mvc_clean {
+            java.srcDirs = ['/src/main/java','../flavors/mvc_clean/java', '../flavors/clean_model/java']
+            manifest.srcFile '../flavors/mvc_clean/AndroidManifest.xml'
+        }
+
+        testMvc_clean{
+            java.srcDirs = ['../flavors/clean_model/test']
+        }
+
+        mvp_clean {
+            java.srcDirs = ['/src/main/java','../flavors/mvp_clean/java', '../flavors/clean_model/java']
+            manifest.srcFile '../flavors/mvp_clean/AndroidManifest.xml'
+        }
+
+        testMvp_clean{
+             java.srcDirs = ['../flavors/clean_model/test','../flavors/mvp_clean/test']
+        }
+
+        mvvm_clean{
+            java.srcDirs = ['/src/main/java','../flavors/mvvm_clean/java', '../flavors/clean_model/java']
+            manifest.srcFile '../flavors/mvvm_clean/AndroidManifest.xml'
+        }
+
+        testMvvm_clean {
+            java.srcDirs = ['../flavors/model/test']
+        }
+
+        mvi_with_presenter{
+            java.srcDirs = ['/src/main/java',
+                            '../flavors/mvi_with_presenter/java',
+                            '../flavors/model/java',
+                            '../flavors/intent/java'
+            ]
+            manifest.srcFile '../flavors/mvi_with_presenter/AndroidManifest.xml'
+        }
+
+        mvi_with_presenter_clean{
+            java.srcDirs = ['/src/main/java',
+                            '../flavors/mvi_with_presenter_clean/java',
+                            '../flavors/clean_model/java',
+                            '../flavors/clean_intent/java'
+            ]
+            manifest.srcFile '../flavors/mvi_with_presenter_clean/AndroidManifest.xml'
+        }
+
+        mvi_with_viewmodel{
+            java.srcDirs = ['/src/main/java',
+                            '../flavors/mvi_with_viewmodel/java',
+                            '../flavors/model/java',
+                            '../flavors/intent/java'
+            ]
+            manifest.srcFile '../flavors/mvi_with_viewmodel/AndroidManifest.xml'
+        }
+
+        mvi_with_viewmodel_clean{
+            java.srcDirs = ['/src/main/java',
+                            '../flavors/mvi_with_viewmodel_clean/java',
+                            '../flavors/clean_model/java',
+                            '../flavors/clean_intent/java'
+            ]
+            manifest.srcFile '../flavors/mvi_with_viewmodel_clean/AndroidManifest.xml'
+        }
+
+        viper {
+            java.srcDirs = ['/src/main/java',
+                            '../flavors/viper/java',
+                            '../flavors/model/java',
+                            '../flavors/viper_view_route/java'
+            ]
+
+            res.srcDirs += ['../flavors/viper_view_route/res']
+            manifest.srcFile '../flavors/viper/AndroidManifest.xml'
+        }
+
+        viper_clean {
+            java.srcDirs = ['/src/main/java',
+                            '../flavors/viper_clean/java',
+                            '../flavors/clean_model/java',
+                            '../flavors/viper_view_route/java'
+            ]
+
+            res.srcDirs += ['../flavors/viper_view_route/res']
+            manifest.srcFile '../flavors/viper_clean/AndroidManifest.xml'
+        }
+
+        mvi_with_viper {
+            java.srcDirs = ['/src/main/java',
+                            '../flavors/mvi_with_viper/java',
+                            '../flavors/model/java',
+                            '../flavors/viper_view_route/java',
+                            '../flavors/intent/java'
+            ]
+
+            res.srcDirs += ['../flavors/viper_view_route/res']
+            manifest.srcFile '../flavors/mvi_with_viper/AndroidManifest.xml'
+        }
+
+        mvi_with_viper_clean{
+            java.srcDirs = ['/src/main/java',
+                            '../flavors/mvi_with_viper_clean/java',
+                            '../flavors/clean_model/java',
+                            '../flavors/viper_view_route/java',
+                            '../flavors/clean_intent/java'
+            ]
+
+            res.srcDirs += ['../flavors/viper_view_route/res']
+            manifest.srcFile '../flavors/mvi_with_viper_clean/AndroidManifest.xml'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    testOptions.unitTests.all {
+        testLogging {
+            exceptionFormat "full"
+        }
+    }
+    testOptions.unitTests.includeAndroidResources = true
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    mvvmImplementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
+    mvvm_cleanImplementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
+    mvi_with_viewmodelImplementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
+    mvi_with_viewmodel_cleanImplementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
+    mvi_with_viewmodelImplementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    mvi_with_viewmodel_cleanImplementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    implementation "io.reactivex.rxjava3:rxkotlin:3.0.1"
+    testImplementation 'org.mockito:mockito-core:4.8.0'
+    androidTestImplementation 'org.mockito:mockito-core:4.8.0'
+    testImplementation "com.squareup.okhttp3:mockwebserver:4.9.0"
+
+}

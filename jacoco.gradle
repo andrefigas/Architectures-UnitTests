@@ -1,0 +1,131 @@
+apply plugin: 'jacoco'
+jacoco {
+    toolVersion = "0.8.7"
+}
+project.afterEvaluate {
+    def buildTypes = android.buildTypes.collect { type -> type.name }
+    def productFlavors = android.productFlavors.collect { flavor -> flavor.name }
+
+    // When no product flavors defined, use empty
+    if (!productFlavors) productFlavors.add('')
+
+
+    if (android.hasProperty("applicationVariants")) {
+        android.applicationVariants.all { variant ->
+            createVariantCoverage(variant)
+        }
+    } else if (android.hasProperty("libraryVariants")) {
+        android.libraryVariants.all { variant ->
+            createVariantCoverage(variant)
+        }
+    }
+}
+ext.excludes = [
+        '**/*Activity.class',
+        '**/Person.class',
+        '**/PersonDataModel.class',
+        '**/BuildConfig.*',
+]
+def createVariantCoverage(variant) {
+    def variantName = variant.name
+
+    println()
+
+    def testTaskName = "test${variantName.capitalize()}UnitTest"
+
+    // Add unit test coverage tasks
+    tasks.create(name: "${testTaskName}Coverage", type: JacocoReport, dependsOn: "$testTaskName") {
+        group = "Reporting"
+        description = "Generate Jacoco coverage reports for the ${variantName.capitalize()} build."
+
+        reports {
+            html.enabled = true
+        }
+
+        def javaClasses = fileTree(dir: variant.javaCompileProvider.get().destinationDir, excludes: project.excludes)
+        def kotlinClasses = fileTree(dir: "${buildDir}/tmp/kotlin-classes/${variantName}", excludes: project.excludes)
+        getClassDirectories().setFrom(files([javaClasses, kotlinClasses]))
+
+        getSourceDirectories().setFrom(files([
+                "$project.projectDir/src/main/java",
+                "$project.projectDir/src/${variantName}/java",
+                "$project.projectDir/src/main/kotlin",
+                "$project.projectDir/src/${variantName}/kotlin"
+        ]))
+
+        getExecutionData().setFrom(files("${project.buildDir}/outputs/unit_test_code_coverage/${variantName}UnitTest/${testTaskName}.exec"))
+
+        doLast {
+            def m = new File("${project.buildDir}/reports/jacoco/${testTaskName}Coverage/html/index.html")
+                    .text =~ /Total[^%]*>(\d?\d?\d?%)/
+            if (m) {
+                println "Test coverage: ${m[0][1]}"
+            }
+        }
+    }
+
+    // Add unit test coverage verification tasks
+    tasks.create(name: "${testTaskName}CoverageVerification", type: JacocoCoverageVerification, dependsOn: "${testTaskName}Coverage") {
+        group = "Reporting"
+        description = "Verifies Jacoco coverage for the ${variantName.capitalize()} build."
+        violationRules {
+            rule {
+                limit {
+                    minimum = 0
+                }
+            }
+            rule {
+                element = 'BUNDLE'
+                limit {
+                    counter = 'LINE'
+                    value = 'COVEREDRATIO'
+                    minimum = 0.30
+                }
+            }
+        }
+        def javaClasses = fileTree(dir: variant.javaCompileProvider.get().destinationDir, excludes: project.excludes)
+        def kotlinClasses = fileTree(dir: "${buildDir}/tmp/kotlin-classes/${variantName}", excludes: project.excludes)
+        getClassDirectories().setFrom(files([javaClasses, kotlinClasses]))
+        getSourceDirectories().setFrom(files([
+                "$project.projectDir/src/main/java",
+                "$project.projectDir/src/${variantName}/java",
+                "$project.projectDir/src/main/kotlin",
+                "$project.projectDir/src/${variantName}/kotlin"
+        ]))
+        getExecutionData().setFrom(files("${project.buildDir}/outputs/unit_test_code_coverage/${variantName}UnitTest/${testTaskName}.exec"))
+    }
+}
+
+
+task jacocoTestReport(type: JacocoReport, dependsOn: "connectedDebugAndroidTest") {
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports after running tests."
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+    getClassDirectories().setFrom(fileTree(
+            dir: './build/intermediates/classes/debug',
+            excludes: ['**/R*.class',
+                       '**/Foo.*',
+                       '**/*$InjectAdapter.class',
+                       '**/*$ModuleAdapter.class',
+                       '**/*$ViewInjector*.class'
+            ]))
+    // If you have rs/aidl etc... add them here.
+    def coverageSourceDirs = [
+            'src/main/java',
+    ]
+
+    getSourceDirectories().setFrom(files(coverageSourceDirs))
+    getExecutionData().setFrom(files("$buildDir/jacoco/testDebug.exec"))
+    // Bit hacky but fixes https://code.google.com/p/android/issues/detail?id=69174.
+    // We iterate through the compiled .class tree and rename $$ to $.
+    doFirst {
+        new File("$buildDir/intermediates/classes/").eachFileRecurse { file ->
+            if (file.name.contains('$$')) {
+                file.renameTo(file.path.replace('$$', '$'))
+            }
+        }
+    }
+}
