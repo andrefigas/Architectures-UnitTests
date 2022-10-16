@@ -21,6 +21,7 @@ project.afterEvaluate {
     }
 }
 ext.excludes = [
+        '**/*ViewModelFactory.class',
         '**/*Activity.class',
         '**/Person.class',
         '**/PersonDataModel.class',

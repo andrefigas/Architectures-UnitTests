@@ -24,20 +24,30 @@ class MainActivity : AppCompatActivity(){
 
         viewModel = ViewModelProviders.of(
             this, PersonViewModelFactory(
-                PersonModel(this)
+                PersonModel()
             )
         ).get(PersonViewModel::class.java)
 
         setContentView(R.layout.activity_main)
         setupUI()
 
-        viewModel.data.observe(this) { person : Person ->
+        viewModel.data.observe(this) { person : Person? ->
             hideLoading()
-            showPersonName(person.name)
+            if(person == null){
+                showPersonNameError()
+            }else{
+                showPersonName(person.name)
+            }
+
         }
-        viewModel.insert.observe(this) { person : Person->
+
+        viewModel.insert.subscribe { name : String->
             hideLoading()
-            showSavedPerson(person.name)
+            if(name.isEmpty()){
+                showSavedPersonError()
+            }else{
+                showSavedPerson(name)
+            }
         }
 
         showLoading()
@@ -57,6 +67,10 @@ class MainActivity : AppCompatActivity(){
         nameEt.setText(name)
     }
 
+    private fun showPersonNameError() {
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
+    }
+
     private fun showSavedPerson(name: String) {
         Toast.makeText(
             this,
@@ -64,6 +78,11 @@ class MainActivity : AppCompatActivity(){
             Toast.LENGTH_SHORT
         ).show()
     }
+
+    private fun showSavedPersonError() {
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
+    }
+
 
     private fun showLoading() {
         progressPb.visibility = View.VISIBLE

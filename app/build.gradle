@@ -83,6 +83,10 @@ android {
             manifest.srcFile '../flavors/mvvm/AndroidManifest.xml'
         }
 
+        testMvvm{
+            java.srcDirs = ['../flavors/model/test','../flavors/mvvm/test']
+        }
+
         mvc_clean {
             java.srcDirs = ['/src/main/java','../flavors/mvc_clean/java', '../flavors/clean_model/java']
             manifest.srcFile '../flavors/mvc_clean/AndroidManifest.xml'
@@ -228,6 +232,10 @@ dependencies {
     implementation "io.reactivex.rxjava3:rxkotlin:3.0.1"
     testImplementation 'org.mockito:mockito-core:4.8.0'
     androidTestImplementation 'org.mockito:mockito-core:4.8.0'
-    //testImplementation "com.squareup.okhttp3:mockwebserver:4.9.0"
+    testImplementation("android.arch.core:core-testing:1.1.1", {
+        exclude group: 'com.android.support', module: 'supp.ort-compat'
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'com.android.support', module: 'support-core-utils'
+    })
 
 }

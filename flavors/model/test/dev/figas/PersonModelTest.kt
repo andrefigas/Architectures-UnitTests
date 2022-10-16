@@ -2,7 +2,7 @@ package dev.figas
 
 import dev.figas.model.Person
 import dev.figas.model.PersonModel
-import dev.figas.model.PersonModelContract
+
 import io.reactivex.rxjava3.android.plugins.RxAndroidPlugins
 import io.reactivex.rxjava3.plugins.RxJavaPlugins
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -11,7 +11,7 @@ import org.junit.Test
 
 class PersonModelTest {
 
-    lateinit var model : PersonModelContract
+    lateinit var model : PersonModel
 
     @Before
     fun setup() {
