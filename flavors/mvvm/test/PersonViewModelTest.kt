@@ -1,6 +1,9 @@
+package dev.figas
+
 import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.arch.core.executor.TaskExecutor
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import dev.figas.model.Person
 import dev.figas.model.PersonModel
 import dev.figas.model.PersonModelContract
@@ -143,7 +146,6 @@ class PersonViewModelTest {
         setupArch()
 
         model = mock(PersonModelContract::class.java)
-        `when`(model.injectPerson(Person(anyString()))).thenReturn(Single.error(Throwable()))
         viewModel = PersonViewModel(model)
     }
 
@@ -163,16 +165,17 @@ class PersonViewModelTest {
         })
     }
 
-    private fun <T> LiveData<T>.test(trigger : ()-> Unit): MutableList<T> {
-        val list = mutableListOf<T>()
+    private fun <T> LiveData<T>.test(trigger : ()-> Unit): MutableList<T?> {
+        val list = mutableListOf<T?>()
 
         ArchTaskExecutor.getMainThreadExecutor().execute {
 
-            observeForever { data ->
-                list.add(data as T)
-            }
+            val observer = Observer<T> { o -> list.add(o) }
+
+            observeForever(observer)
 
             trigger()
+            this@test.removeObserver(observer)
         }
 
        return list
