@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import dev.figas.R
 import dev.figas.interactor.MainInteractor
@@ -23,7 +24,7 @@ class MainActivity : AppCompatActivity(), PersonView {
 
         presenter = PersonPresenter(this,
             MainRouter(this),
-            MainInteractor(PersonModel(this)))
+            MainInteractor(PersonModel()))
 
         setContentView(R.layout.activity_main)
         setupUI()
@@ -41,6 +42,14 @@ class MainActivity : AppCompatActivity(), PersonView {
 
     override fun showPersonName(name: String) {
         nameEt.setText(name)
+    }
+
+    override fun showPersonNameFail() {
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showUpdatePersonFail() {
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
     }
 
     override fun showLoading() {
@@ -61,4 +70,6 @@ interface PersonView {
     fun hideLoading()
     fun showLoading()
     fun showPersonName(name: String)
+    fun showUpdatePersonFail()
+    fun showPersonNameFail()
 }

@@ -3,40 +3,46 @@ package dev.figas.interactor
 import android.os.AsyncTask
 import dev.figas.model.Person
 import dev.figas.model.PersonModelContract
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.functions.Consumer
+import io.reactivex.rxjava3.schedulers.Schedulers
 
 class MainInteractor( private val model: PersonModelContract) : MainInteractorContract{
 
-    private val requests = mutableListOf<AsyncTask<*, *, *>>()
+    private val requests = CompositeDisposable()
 
     override fun injectPerson(name: String,
-                              onPreExecute : ()->Unit,
-                              onPostExecute : (Person)->Unit) {
-        requests.add(model.injectPerson(Person(name),
-                onPreExecute,
-                onPostExecute
-            ))
+                              onSuccess : Consumer<Person>,
+                              onFailutre : Consumer<Throwable>) {
+        requests.add(
+            model.injectPerson(Person(name))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(onSuccess, onFailutre)
+            )
     }
 
-    override fun fetchPerson(onPreExecute : ()->Unit,
-                             onPostExecute : (Person)->Unit) {
+    override fun fetchPerson( onSuccess : Consumer<Person>,
+                              onFailutre : Consumer<Throwable>) {
         requests.add(
-            model.providePerson(onPreExecute, onPostExecute)
+            model.providePerson()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(onSuccess, onFailutre)
         )
     }
 
-    override fun release() {
-        requests.forEach {
-            it.cancel(true)
-        }
+    override fun release() : Boolean {
+        val disposed = requests.isDisposed
+        requests.dispose()
+        return disposed
     }
 
 }
 
 interface MainInteractorContract{
-    fun injectPerson(name: String,
-                     onPreExecute : ()->Unit,
-                     onPostExecute : (Person)->Unit)
-    fun fetchPerson(onPreExecute : ()->Unit,
-                    onPostExecute : (Person)->Unit)
-    fun release()
+    fun release() : Boolean
+    fun injectPerson(name: String, onSuccess: Consumer<Person>, onFailutre: Consumer<Throwable>)
+    fun fetchPerson(onSuccess: Consumer<Person>, onFailutre: Consumer<Throwable>)
 }

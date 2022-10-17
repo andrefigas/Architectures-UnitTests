@@ -9,37 +9,39 @@ class PersonPresenter(private val view : PersonView,
                       private val interactor: MainInteractorContract) : PersonPresenterContract {
 
     override fun injectPerson(name : String) {
+        view.showLoading()
         interactor.injectPerson(name,
-            onPreExecute = {
-                view.showLoading()
-            },
-            onPostExecute = { person->
+            { person ->
                 view.hideLoading()
                 router.goToSuccess(person.name)
+            },
+            {
+                view.hideLoading()
+                view.showUpdatePersonFail()
             }
         )
 
     }
 
     override fun fetchPerson() {
+        view.showLoading()
         interactor.fetchPerson(
-            onPreExecute = {
-                view.showLoading()
-            },
-            onPostExecute = { person->
+            { person->
                 view.hideLoading()
                 view.showPersonName(person.name)
+            },
+            {
+                view.hideLoading()
+                view.showPersonNameFail()
             })
     }
 
-    override fun release(){
-        interactor.release()
-    }
+    override fun release() = interactor.release()
 
 }
 
 interface PersonPresenterContract{
     fun injectPerson(name: String)
     fun fetchPerson()
-    fun release()
+    fun release() : Boolean
 }

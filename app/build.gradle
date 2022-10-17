@@ -161,6 +161,10 @@ android {
             manifest.srcFile '../flavors/viper/AndroidManifest.xml'
         }
 
+        testViper{
+            java.srcDirs = ['../flavors/model/test','../flavors/viper/test']
+        }
+
         viper_clean {
             java.srcDirs = ['/src/main/java',
                             '../flavors/viper_clean/java',

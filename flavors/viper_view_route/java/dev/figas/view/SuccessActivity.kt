@@ -12,6 +12,7 @@ class SuccessActivity : AppCompatActivity(){
     companion object {
         private const val KEY_NAME = "name"
 
+        @JvmStatic
         fun launch(context: Context, name: String) {
             val intent = Intent(context, SuccessActivity::class.java)
             intent.putExtra(KEY_NAME, name)
