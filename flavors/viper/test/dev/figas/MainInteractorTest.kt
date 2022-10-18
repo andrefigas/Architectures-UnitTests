@@ -33,7 +33,7 @@ class MainInteractorTest {
             //then
             assert(person == expected)
         },{
-            it.printStackTrace()
+            assert(false)
         })
     }
 
