@@ -4,6 +4,10 @@ import dev.figas.model.Person
 
 sealed class PersonEffect {
 
-    data class OnPersonSaved(val person: Person) : PersonEffect()
+    data class OnPersonSaved(@JvmField val person: Person) : PersonEffect()
+
+    object OnPersonSavedFailed : PersonEffect()
+
+    object OnFetchPersonFailed : PersonEffect()
 
 }

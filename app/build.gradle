@@ -123,6 +123,10 @@ android {
             manifest.srcFile '../flavors/mvi_with_presenter/AndroidManifest.xml'
         }
 
+        testMvi_with_presenter{
+            java.srcDirs = ['../flavors/model/test','../flavors/mvi_with_presenter/test']
+        }
+
         mvi_with_presenter_clean{
             java.srcDirs = ['/src/main/java',
                             '../flavors/mvi_with_presenter_clean/java',
@@ -139,6 +143,10 @@ android {
                             '../flavors/intent/java'
             ]
             manifest.srcFile '../flavors/mvi_with_viewmodel/AndroidManifest.xml'
+        }
+
+        testMvi_with_viewmodel{
+            java.srcDirs = ['../flavors/model/test','../flavors/mvi_with_viewmodel/test']
         }
 
         mvi_with_viewmodel_clean{
@@ -162,7 +170,9 @@ android {
         }
 
         testViper{
-            java.srcDirs = ['../flavors/model/test','../flavors/viper/test']
+            java.srcDirs = ['../flavors/model/test',
+                            '../flavors/viper/test',
+                            '../flavors/viper_view_route/test',]
         }
 
         viper_clean {
@@ -186,6 +196,12 @@ android {
 
             res.srcDirs += ['../flavors/viper_view_route/res']
             manifest.srcFile '../flavors/mvi_with_viper/AndroidManifest.xml'
+        }
+
+        testMvi_with_viper{
+            java.srcDirs = ['../flavors/model/test',
+                            '../flavors/viper_view_route/test',
+                            '../flavors/mvi_with_viper/test']
         }
 
         mvi_with_viper_clean{

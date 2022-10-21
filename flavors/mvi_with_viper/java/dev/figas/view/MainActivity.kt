@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity(), PersonView {
 
         presenter = PersonPresenter(this,
             MainRouter(this),
-            MainInteractor(PersonModel(this))
+            MainInteractor(PersonModel())
         )
 
         setContentView(R.layout.activity_main)

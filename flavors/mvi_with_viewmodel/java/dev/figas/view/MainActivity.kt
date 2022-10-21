@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
         viewModel = ViewModelProviders.of(
             this, PersonViewModelFactory(
-                PersonModel(this)
+                PersonModel()
             )
         ).get(PersonViewModel::class.java)
 
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        viewModel.effetcs.subscribe{ effect ->
+        viewModel.effects.subscribe{ effect ->
             when(effect){
                 is PersonEffect.OnPersonSaved -> {
                     hideLoading()

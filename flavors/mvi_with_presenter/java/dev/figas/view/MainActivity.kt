@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity(), PersonView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        presenter = PersonPresenter(this, PersonModel(this))
+        presenter = PersonPresenter(this, PersonModel())
 
         setContentView(R.layout.activity_main)
         setupUI()
@@ -45,6 +45,14 @@ class MainActivity : AppCompatActivity(), PersonView {
                 hideLoading()
                 showSavedPerson(personEffect.person.name)
             }
+            PersonEffect.OnFetchPersonFailed -> {
+                hideLoading()
+                showPersonNameFailed()
+            }
+            PersonEffect.OnPersonSavedFailed -> {
+                hideLoading()
+                showSavePersonFailed()
+            }
         }
     }
 
@@ -63,6 +71,14 @@ class MainActivity : AppCompatActivity(), PersonView {
 
     private fun showPersonName(name: String) {
         nameEt.setText(name)
+    }
+
+    private fun showPersonNameFailed() {
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showSavePersonFailed() {
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
     }
 
     private fun showSavedPerson(name: String) {
