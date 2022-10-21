@@ -2,7 +2,6 @@ package dev.figas
 
 import dev.figas.intent.event.PersonEvent
 import dev.figas.intent.vieweffect.PersonEffect
-import dev.figas.intent.viewstate.MockState
 import dev.figas.intent.viewstate.PersonState
 import dev.figas.model.Person
 import dev.figas.model.PersonModel
@@ -41,7 +40,7 @@ class PersonPresenterTest {
 
         Mockito.inOrder(view)
         Mockito.verify(view, Mockito.times(2))
-            .processPageState(stateCaptor.capture()?: MockState)
+            .processPageState(stateCaptor.capture()?: anyState())
 
         stateCaptor.allValues.forEachIndexed { index, personState ->
             when(index){
@@ -70,7 +69,7 @@ class PersonPresenterTest {
 
         Mockito.inOrder(view)
         Mockito.verify(view, Mockito.times(1))
-            .processPageState(stateCaptor.capture()?:MockState)
+            .processPageState(stateCaptor.capture()?:anyState())
         Mockito.verify(view, Mockito.times(1)).processEffect(effectCaptor.capture()?:
         PersonEffect.OnPersonSaved(
             Person(name)
@@ -98,7 +97,7 @@ class PersonPresenterTest {
 
         Mockito.inOrder(view)
         Mockito.verify(view, Mockito.times(1))
-            .processPageState(stateCaptor.capture()?:MockState)
+            .processPageState(stateCaptor.capture()?:anyState())
         Mockito.verify(view, Mockito.times(1)).processEffect(
             effectCaptor.capture()?: PersonEffect.OnFetchPersonFailed
         )
@@ -123,7 +122,7 @@ class PersonPresenterTest {
 
         Mockito.inOrder(view)
         Mockito.verify(view, Mockito.times(1))
-            .processPageState(stateCaptor.capture()?:MockState)
+            .processPageState(stateCaptor.capture()?:anyState())
         Mockito.verify(view, Mockito.times(1)).processEffect(
             effectCaptor.capture()?: PersonEffect.OnPersonSavedFailed
         )
@@ -153,11 +152,13 @@ class PersonPresenterTest {
 
         Mockito.inOrder(view)
         Mockito.verify(view, Mockito.times(1))
-            .processPageState(stateCaptor.capture()?:PersonState.Loading)
+            .processPageState(stateCaptor.capture()?:anyState())
         Mockito.verifyNoMoreInteractions(view)
 
         Assert.assertEquals(stateCaptor.value, PersonState.Loading)
     }
+
+    private fun anyState() : PersonState = PersonState.Loading
 
     @Test
     fun updatePersonCancel(){
@@ -177,7 +178,7 @@ class PersonPresenterTest {
 
         Mockito.inOrder(view)
         Mockito.verify(view, Mockito.times(1))
-            .processPageState(stateCaptor.capture()?:MockState)
+            .processPageState(stateCaptor.capture()?:anyState())
         Mockito.verifyNoMoreInteractions(view)
 
         Assert.assertEquals(stateCaptor.value, PersonState.Loading)
