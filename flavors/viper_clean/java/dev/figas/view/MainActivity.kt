@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import dev.figas.R
 import dev.figas.data.mappers.PersonMapper
@@ -25,7 +26,7 @@ class MainActivity : AppCompatActivity(), PersonView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val repo : PersonRepoContract = PersonRepository(this, PersonMapper())
+        val repo : PersonRepoContract = PersonRepository(PersonMapper())
         presenter = PersonPresenter(this,
             MainRouter(this),
             MainInteractor(GetPersonUseCase(repo),
@@ -44,6 +45,14 @@ class MainActivity : AppCompatActivity(), PersonView {
         findViewById<View>(R.id.submit_bt).setOnClickListener {
             presenter.injectPerson(nameEt.text.toString())
         }
+    }
+
+    override fun showPersonNameFail(){
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showSavePersonFail(){
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
     }
 
     override fun showPersonName(name: String) {
@@ -68,5 +77,6 @@ interface PersonView {
     fun hideLoading()
     fun showLoading()
     fun showPersonName(name: String)
-
+    fun showPersonNameFail()
+    fun showSavePersonFail()
 }

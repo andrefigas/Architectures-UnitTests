@@ -1,12 +1,11 @@
 package dev.figas
 
+import dev.figas.domain.models.Person
+import dev.figas.domain.usecases.GetPersonUseCaseContract
+import dev.figas.domain.usecases.UpdatePersonUseCaseContract
 import dev.figas.interactor.MainInteractor
 import dev.figas.interactor.MainInteractorContract
-import dev.figas.model.Person
-import dev.figas.model.PersonModel
-import dev.figas.model.PersonModelContract
 import dev.figas.presenter.PersonPresenter
-import dev.figas.route.MainRouter
 import dev.figas.route.MainRouterContract
 import dev.figas.view.PersonView
 import io.reactivex.rxjava3.android.plugins.RxAndroidPlugins
@@ -23,7 +22,8 @@ class PersonPresenterTest {
 
     private lateinit var view : PersonView
     private lateinit var presenter : PersonPresenter
-    private lateinit var model : PersonModelContract
+    private lateinit var getPersonUseCase: GetPersonUseCaseContract
+    private lateinit var updatePersonUseCase: UpdatePersonUseCaseContract
     private lateinit var interactor: MainInteractorContract
     private lateinit var router : MainRouterContract
 
@@ -37,6 +37,7 @@ class PersonPresenterTest {
         setupSuccess()
 
         //when
+        `when`(getPersonUseCase.execute()).thenReturn(anySinglePerson())
         presenter.fetchPerson()
 
         //then
@@ -72,7 +73,7 @@ class PersonPresenterTest {
     fun fetchPersonFail() {
         //given
         setupFail()
-        `when`(model.providePerson()).thenReturn(Single.error(Throwable()))
+        `when`(getPersonUseCase.execute()).thenReturn(anySingleThrowable())
 
         //when
         presenter.fetchPerson()
@@ -89,7 +90,7 @@ class PersonPresenterTest {
         //given
         setupFail()
         val name = "world"
-        `when`(model.injectPerson(Person(name))).thenReturn(Single.error(Throwable()))
+        `when`(updatePersonUseCase.execute(anyPerson())).thenReturn(anySingleThrowable())
 
         //when
         presenter.injectPerson(name)
@@ -98,7 +99,7 @@ class PersonPresenterTest {
         inOrder(view)
         verify(view, times(1)).showLoading()
         verify(view, times(1)).hideLoading()
-        verify(view, times(1)).showUpdatePersonFail()
+        verify(view, times(1)).showSavePersonFail()
     }
 
     //CANCEL
@@ -108,8 +109,8 @@ class PersonPresenterTest {
         setupCancel()
 
         //given
-        `when`(model.providePerson()).thenReturn(
-            Single.just(Person("")).delay(1, TimeUnit.SECONDS)
+        `when`(getPersonUseCase.execute()).thenReturn(
+           anySinglePerson().delay(1, TimeUnit.SECONDS)
         )
 
         //when
@@ -126,12 +127,12 @@ class PersonPresenterTest {
         setupCancel()
 
         //given
-        `when`(model.injectPerson(Person(""))).thenReturn(
-            Single.just(Person("")).delay(1, TimeUnit.SECONDS)
+        `when`(updatePersonUseCase.execute(anyPerson())).thenReturn(
+            anySinglePerson().delay(1, TimeUnit.SECONDS)
         )
 
         //when
-        presenter.injectPerson("")
+        presenter.injectPerson(anyString())
 
         //then
         verify(view, times(1)).showLoading()
@@ -147,8 +148,9 @@ class PersonPresenterTest {
 
         router = mock(MainRouterContract::class.java)
         view = mock(PersonView::class.java)
-        model = PersonModel()
-        interactor = MainInteractor(model)
+        getPersonUseCase = mock(GetPersonUseCaseContract::class.java)
+        updatePersonUseCase = mock(UpdatePersonUseCaseContract::class.java)
+        interactor = MainInteractor(getPersonUseCase, updatePersonUseCase)
         presenter = PersonPresenter(view, router, interactor)
     }
 
@@ -158,8 +160,9 @@ class PersonPresenterTest {
 
         router = mock(MainRouterContract::class.java)
         view = mock(PersonView::class.java)
-        model = mock(PersonModelContract::class.java)
-        interactor = MainInteractor(model)
+        getPersonUseCase = mock(GetPersonUseCaseContract::class.java)
+        updatePersonUseCase = mock(UpdatePersonUseCaseContract::class.java)
+        interactor = MainInteractor(getPersonUseCase, updatePersonUseCase)
         presenter = PersonPresenter(view, router, interactor)
     }
 
@@ -168,8 +171,9 @@ class PersonPresenterTest {
 
         router = mock(MainRouterContract::class.java)
         view = mock(PersonView::class.java)
-        model = mock(PersonModelContract::class.java)
-        interactor = MainInteractor(model)
+        getPersonUseCase = mock(GetPersonUseCaseContract::class.java)
+        updatePersonUseCase = mock(UpdatePersonUseCaseContract::class.java)
+        interactor = MainInteractor(getPersonUseCase, updatePersonUseCase)
         presenter = PersonPresenter(view, router, interactor)
     }
 
@@ -178,5 +182,15 @@ class PersonPresenterTest {
     private fun captureString(captor: ArgumentCaptor<String>): String = captor.capture() ?: ""
 
     private fun <T> capture(captor: ArgumentCaptor<T>, defaultValue : T): T = captor.capture() ?: defaultValue
+
+    private fun anySingleThrowable() : Single<Person> = Single.error(anyThrowable())
+
+    private fun anyThrowable() = Throwable()
+
+    private fun anySinglePerson() = Single.just(anyPerson())
+
+    private fun anyPerson() = Person(anyString())
+
+    private fun anyString() = ""
 
 }

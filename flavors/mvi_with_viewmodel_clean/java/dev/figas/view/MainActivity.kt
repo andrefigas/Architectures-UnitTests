@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val repo : PersonRepoContract = PersonRepository(this, PersonMapper())
+        val repo : PersonRepoContract = PersonRepository(PersonMapper())
         viewModel = ViewModelProviders.of(
             this, PersonViewModelFactory(
                 GetPersonUseCase(repo),
@@ -56,15 +56,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel.effect.subscribe{ effect ->
+            hideLoading()
             when(effect){
-                is PersonEffect.OnPersonSaved -> {
-                    hideLoading()
-                    showSavedPerson(effect.person.name)
-                }
+                is PersonEffect.OnPersonSaved -> showSavedPerson(effect.person.name)
+                PersonEffect.OnFetchPersonFailed -> showFetchPersonFail()
+                PersonEffect.OnPersonSavedFailed -> showSavedPersonFail()
             }
         }
 
-        viewModel.sentIntent(PersonEvent.OnLoad)
+        viewModel.sendIntent(PersonEvent.OnLoad)
     }
 
     private fun setupUI() {
@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         progressPb = findViewById(R.id.progress_pb)
         findViewById<View>(R.id.submit_bt).setOnClickListener {
             showLoading()
-            viewModel.sentIntent(PersonEvent.OnSubmitClicked(nameEt.text.toString()))
+            viewModel.sendIntent(PersonEvent.OnSubmitClicked(nameEt.text.toString()))
         }
     }
 
@@ -88,6 +88,22 @@ class MainActivity : AppCompatActivity() {
         ).show()
     }
 
+    private fun showSavedPersonFail() {
+        Toast.makeText(
+            this,
+            R.string.error,
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun showFetchPersonFail() {
+        Toast.makeText(
+            this,
+            R.string.error,
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
     private fun showLoading() {
         progressPb.visibility = View.VISIBLE
     }
@@ -95,6 +111,8 @@ class MainActivity : AppCompatActivity() {
     private fun hideLoading() {
         progressPb.visibility = View.INVISIBLE
     }
+
+
 
 }
 

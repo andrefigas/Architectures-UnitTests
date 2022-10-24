@@ -1,20 +1,20 @@
 package dev.figas.presenter
 
-import android.os.AsyncTask
 import dev.figas.domain.models.Person
-import dev.figas.domain.usecases.GetPersonUseCase
-import dev.figas.domain.usecases.UpdatePersonUseCase
+import dev.figas.domain.usecases.GetPersonUseCaseContract
+import dev.figas.domain.usecases.UpdatePersonUseCaseContract
 import dev.figas.intent.event.PersonEvent
 import dev.figas.view.PersonView
 import dev.figas.intent.vieweffect.PersonEffect
 import dev.figas.intent.viewstate.PersonState
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class PersonPresenter(private val view : PersonView,
-                      private val getPersonUseCase: GetPersonUseCase,
-                      private val updatePersonUseCase: UpdatePersonUseCase
+                      private val getPersonUseCase: GetPersonUseCaseContract,
+                      private val updatePersonUseCase: UpdatePersonUseCaseContract
 ) : PersonPresenterContract {
 
-    private val requests = mutableListOf<AsyncTask<*, *, *>>()
+    private val requests = CompositeDisposable()
 
      override fun processIntent(personEvent: PersonEvent){
         when(personEvent){
@@ -33,14 +33,14 @@ class PersonPresenter(private val view : PersonView,
     }
 
     private fun injectPerson(name : String) {
+        view.processPageState(PersonState.Loading)
         requests.add(
-            updatePersonUseCase.execute(
-                Person(name),
-                onPreExecute = {
-                    view.processPageState(PersonState.Loading)
-                },
-                onPostExecute = { person->
+            updatePersonUseCase.execute(Person(name)).subscribe(
+                { person->
                     view.processEffect(PersonEffect.OnPersonSaved(person))
+                },
+                {
+                    view.processEffect(PersonEffect.OnPersonSavedFailed)
                 }
             )
 
@@ -49,21 +49,19 @@ class PersonPresenter(private val view : PersonView,
     }
 
     private fun fetchPerson() {
+        view.processPageState(PersonState.Loading)
         requests.add(
-            getPersonUseCase.execute(
-                onPreExecute = {
-                    view.processPageState(PersonState.Loading)
-                },
-                onPostExecute = { person->
+            getPersonUseCase.execute().subscribe(
+                { person->
                     view.processPageState(PersonState.Data(person))
+                }, {
+                    view.processEffect(PersonEffect.OnFetchPersonFailed)
                 })
         )
     }
 
     private fun release(){
-        requests.forEach {
-            it.cancel(true)
-        }
+        requests.dispose()
     }
 
 }

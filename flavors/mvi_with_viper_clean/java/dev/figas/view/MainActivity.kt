@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import dev.figas.R
 import dev.figas.data.mappers.PersonMapper
@@ -28,7 +29,7 @@ class MainActivity : AppCompatActivity(), PersonView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val repo: PersonRepoContract = PersonRepository(this, PersonMapper())
+        val repo: PersonRepoContract = PersonRepository(PersonMapper())
         presenter = PersonPresenter(this,
             MainRouter(this),
             MainInteractor(
@@ -52,10 +53,11 @@ class MainActivity : AppCompatActivity(), PersonView {
     }
 
     override fun processEffect(personEffect: PersonEffect){
+        hideLoading()
         when(personEffect){
-            is PersonEffect.OnPersonSaved ->{
-                hideLoading()
-            }
+            is PersonEffect.OnPersonSaved -> showSavePersonName(personEffect.person.name)
+            is PersonEffect.OnPersonSavedFailed -> showSavePersonFail()
+            is PersonEffect.OnFetchPersonFailed -> showPersonNameFail()
         }
     }
 
@@ -74,6 +76,18 @@ class MainActivity : AppCompatActivity(), PersonView {
 
     private fun showPersonName(name: String) {
         nameEt.setText(name)
+    }
+
+    private fun showSavePersonName(name: String) {
+        Toast.makeText(this, getString(R.string.submit_success_message, name), Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showPersonNameFail() {
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showSavePersonFail() {
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
     }
 
     private fun showLoading() {

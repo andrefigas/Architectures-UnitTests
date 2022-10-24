@@ -15,6 +15,7 @@ import dev.figas.domain.usecases.GetPersonUseCase
 import dev.figas.domain.usecases.UpdatePersonUseCase
 import dev.figas.viewmodel.PersonViewModel
 import dev.figas.viewmodel.PersonViewModelFactory
+import io.reactivex.rxjava3.functions.Consumer
 
 class MainActivity : AppCompatActivity(), PersonView {
 
@@ -25,7 +26,7 @@ class MainActivity : AppCompatActivity(), PersonView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val repo : PersonRepoContract = PersonRepository(this, PersonMapper())
+        val repo : PersonRepoContract = PersonRepository(PersonMapper())
         viewModel = ViewModelProviders.of(
             this, PersonViewModelFactory(
                 GetPersonUseCase(repo),
@@ -38,11 +39,21 @@ class MainActivity : AppCompatActivity(), PersonView {
 
         viewModel.data.observe(this) { person ->
             hideLoading()
-            showPersonName(person.name)
+            if(person == null){
+                showPersonNameFail()
+            }else{
+                showPersonName(person.name)
+            }
+
         }
-        viewModel.insert.observe(this) { person ->
+        viewModel.insert.subscribe { name ->
             hideLoading()
-            showSavedPerson(person.name)
+            if (name.isEmpty()) {
+                showSavedPersonFail()
+            } else {
+                showSavedPerson(name)
+            }
+
         }
 
         showLoading()
@@ -62,6 +73,14 @@ class MainActivity : AppCompatActivity(), PersonView {
         nameEt.setText(name)
     }
 
+    override fun showPersonNameFail() {
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showSavedPersonFail() {
+        Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
+    }
+
     override fun showSavedPerson(name: String) {
         Toast.makeText(
             this,
@@ -78,6 +97,10 @@ class MainActivity : AppCompatActivity(), PersonView {
         progressPb.visibility = View.INVISIBLE
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.release()
+    }
 }
 
 interface PersonView {
@@ -85,4 +108,6 @@ interface PersonView {
     fun hideLoading()
     fun showLoading()
     fun showPersonName(name: String)
+    fun showPersonNameFail()
+    fun showSavedPersonFail()
 }

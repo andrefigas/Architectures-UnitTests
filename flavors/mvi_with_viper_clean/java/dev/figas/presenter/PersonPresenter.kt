@@ -29,26 +29,28 @@ class PersonPresenter(private val view : PersonView,
     }
 
     private fun injectPerson(name : String) {
+        view.processPageState(PersonState.Loading)
         interactor.injectPerson(
             name,
-            onPreExecute = {
-                view.processPageState(PersonState.Loading)
-            },
-            onPostExecute = { person->
+            { person ->
                 view.processEffect(PersonEffect.OnPersonSaved(person))
                 router.goToSuccess(person.name)
+            },
+            {
+                view.processEffect(PersonEffect.OnPersonSavedFailed)
             }
         )
 
     }
 
     private fun fetchPerson() {
+        view.processPageState(PersonState.Loading)
         interactor.fetchPerson(
-            onPreExecute = {
-                view.processPageState(PersonState.Loading)
-            },
-            onPostExecute = { person->
+            { person ->
                 view.processPageState(PersonState.Data(person))
+            },
+            {
+                view.processEffect(PersonEffect.OnFetchPersonFailed)
             })
     }
 

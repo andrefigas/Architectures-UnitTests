@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity(), PersonView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val repo : PersonRepoContract = PersonRepository(this, PersonMapper())
+        val repo : PersonRepoContract = PersonRepository(PersonMapper())
         presenter = PersonPresenter(this,
             GetPersonUseCase(repo),
             UpdatePersonUseCase(repo)
@@ -53,6 +53,8 @@ class MainActivity : AppCompatActivity(), PersonView {
                 hideLoading()
                 showSavedPerson(personEffect.person.name)
             }
+            PersonEffect.OnFetchPersonFailed -> showFetchPersonFail()
+            PersonEffect.OnPersonSavedFailed -> showSavedPersonFail()
         }
     }
 
@@ -77,6 +79,22 @@ class MainActivity : AppCompatActivity(), PersonView {
         Toast.makeText(
             this,
             getString(R.string.submit_success_message, name),
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun showSavedPersonFail() {
+        Toast.makeText(
+            this,
+            R.string.error,
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun showFetchPersonFail() {
+        Toast.makeText(
+            this,
+            R.string.error,
             Toast.LENGTH_SHORT
         ).show()
     }

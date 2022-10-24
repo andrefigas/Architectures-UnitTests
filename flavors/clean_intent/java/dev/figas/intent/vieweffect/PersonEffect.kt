@@ -6,4 +6,8 @@ sealed class PersonEffect {
 
     data class OnPersonSaved(val person: Person) : PersonEffect()
 
+    object OnPersonSavedFailed : PersonEffect()
+
+    object OnFetchPersonFailed : PersonEffect()
+
 }

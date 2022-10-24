@@ -111,7 +111,7 @@ android {
         }
 
         testMvvm_clean {
-            java.srcDirs = ['../flavors/model/test']
+            java.srcDirs = ['../flavors/clean_model/test', '../flavors/mvvm_clean/test']
         }
 
         mvi_with_presenter{
@@ -136,6 +136,10 @@ android {
             manifest.srcFile '../flavors/mvi_with_presenter_clean/AndroidManifest.xml'
         }
 
+        testMvi_with_presenter_clean{
+            java.srcDirs = ['../flavors/clean_model/test','../flavors/mvi_with_presenter_clean/test']
+        }
+
         mvi_with_viewmodel{
             java.srcDirs = ['/src/main/java',
                             '../flavors/mvi_with_viewmodel/java',
@@ -156,6 +160,10 @@ android {
                             '../flavors/clean_intent/java'
             ]
             manifest.srcFile '../flavors/mvi_with_viewmodel_clean/AndroidManifest.xml'
+        }
+
+        testMvi_with_viewmodel_clean{
+            java.srcDirs = ['../flavors/clean_model/test','../flavors/mvi_with_viewmodel_clean/test']
         }
 
         viper {
@@ -186,6 +194,12 @@ android {
             manifest.srcFile '../flavors/viper_clean/AndroidManifest.xml'
         }
 
+        testViper_clean{
+            java.srcDirs = ['../flavors/clean_model/test',
+                            '../flavors/viper_clean/test',
+                            '../flavors/viper_view_route/test',]
+        }
+
         mvi_with_viper {
             java.srcDirs = ['/src/main/java',
                             '../flavors/mvi_with_viper/java',
@@ -198,12 +212,6 @@ android {
             manifest.srcFile '../flavors/mvi_with_viper/AndroidManifest.xml'
         }
 
-        testMvi_with_viper{
-            java.srcDirs = ['../flavors/model/test',
-                            '../flavors/viper_view_route/test',
-                            '../flavors/mvi_with_viper/test']
-        }
-
         mvi_with_viper_clean{
             java.srcDirs = ['/src/main/java',
                             '../flavors/mvi_with_viper_clean/java',
@@ -214,6 +222,12 @@ android {
 
             res.srcDirs += ['../flavors/viper_view_route/res']
             manifest.srcFile '../flavors/mvi_with_viper_clean/AndroidManifest.xml'
+        }
+
+        testMvi_with_viper_clean{
+            java.srcDirs = ['../flavors/clean_model/test',
+                            '../flavors/viper_view_route/test',
+                            '../flavors/mvi_with_viper_clean/test']
         }
     }
 

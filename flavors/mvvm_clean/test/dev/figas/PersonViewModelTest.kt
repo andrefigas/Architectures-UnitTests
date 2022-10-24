@@ -4,9 +4,10 @@ import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.arch.core.executor.TaskExecutor
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import dev.figas.model.Person
-import dev.figas.model.PersonModel
-import dev.figas.model.PersonModelContract
+import dev.figas.domain.models.Person
+import dev.figas.domain.usecases.GetPersonUseCaseContract
+import dev.figas.domain.usecases.UpdatePersonUseCaseContract
+
 import dev.figas.viewmodel.PersonViewModel
 import io.reactivex.rxjava3.android.plugins.RxAndroidPlugins
 import io.reactivex.rxjava3.core.Single
@@ -18,7 +19,9 @@ import java.util.concurrent.TimeUnit
 
 class PersonViewModelTest {
 
-    lateinit var model: PersonModelContract
+
+    lateinit var getPersonUseCase: GetPersonUseCaseContract
+    lateinit var updatePersonUseCase: UpdatePersonUseCaseContract
     lateinit var viewModel: PersonViewModel
 
     //SUCCESS
@@ -30,6 +33,7 @@ class PersonViewModelTest {
         setupArch()
         val data = viewModel.data.test {
             //when
+            `when`(getPersonUseCase.execute()).thenReturn(Single.just(Person("hello")))
             viewModel.fetchPerson()
         }
 
@@ -42,14 +46,18 @@ class PersonViewModelTest {
     fun updatePersonSuccess(){
         //given
         setupSuccess()
+        val expected = Person("world")
         val observer = viewModel.insert.test()
 
-        //when
-        viewModel.injectPerson("world")
+        ArchTaskExecutor.getMainThreadExecutor().execute {
+            `when`(updatePersonUseCase.execute(anyPerson())).thenReturn(Single.just(expected))
+            //when
+            viewModel.injectPerson(anyString())
+        }
 
         observer.assertValue {  name : String ->
             //then
-            name == "world"
+            name == expected.name
         }
 
     }
@@ -63,7 +71,7 @@ class PersonViewModelTest {
 
         val data = viewModel.data.test {
             //when
-            `when`(model.providePerson()).thenReturn(anySingleThrowable())
+            `when`(getPersonUseCase.execute()).thenReturn(anySingleThrowable())
             viewModel.fetchPerson()
         }
 
@@ -77,9 +85,11 @@ class PersonViewModelTest {
         setupFailure()
 
         val observer = viewModel.insert.test()
-        `when`(model.injectPerson(anyPerson())).thenReturn(anySingleThrowable())
-        //when
-        viewModel.injectPerson(anyString())
+        ArchTaskExecutor.getMainThreadExecutor().execute {
+            `when`(updatePersonUseCase.execute(anyPerson())).thenReturn(anySingleThrowable())
+            //when
+            viewModel.injectPerson(anyString())
+        }
 
         observer.assertValue {  name : String ->
             //then
@@ -87,7 +97,7 @@ class PersonViewModelTest {
         }
     }
 
-    //Cancel
+    //CANCEL
 
     @Test
     fun updatePersonCancel(){
@@ -95,10 +105,11 @@ class PersonViewModelTest {
         setupCancel()
 
         val observer = viewModel.insert.test()
-
-        `when`(model.injectPerson(anyPerson())).thenReturn(anySinglePerson().delay(1, TimeUnit.SECONDS))
-        //when
-        viewModel.injectPerson(anyString())
+        ArchTaskExecutor.getMainThreadExecutor().execute {
+            `when`(updatePersonUseCase.execute(anyPerson())).thenReturn(anySinglePerson().delay(1, TimeUnit.SECONDS))
+            //when
+            viewModel.injectPerson(anyString())
+        }
 
         observer.assertEmpty()
     }
@@ -110,7 +121,7 @@ class PersonViewModelTest {
 
         val data = viewModel.data.test {
             //when
-            `when`(model.providePerson()).thenReturn(anySinglePerson().delay(1, TimeUnit.SECONDS))
+            `when`(getPersonUseCase.execute()).thenReturn(anySinglePerson().delay(1, TimeUnit.SECONDS))
             viewModel.fetchPerson()
             viewModel.release()
         }
@@ -119,13 +130,15 @@ class PersonViewModelTest {
         assert(data.isEmpty())
     }
 
+    //SETUP
+
     private fun setupCancel(){
         RxAndroidPlugins.setInitMainThreadSchedulerHandler { Schedulers.trampoline() }
         setupArch()
 
-        model = mock(PersonModelContract::class.java)
-        `when`(model.injectPerson(Person(anyString()))).thenReturn(Single.error(Throwable()))
-        viewModel = PersonViewModel(model)
+        getPersonUseCase = mock(GetPersonUseCaseContract::class.java)
+        updatePersonUseCase = mock(UpdatePersonUseCaseContract::class.java)
+        viewModel = PersonViewModel(getPersonUseCase, updatePersonUseCase)
     }
 
     private fun setupSuccess() {
@@ -133,8 +146,9 @@ class PersonViewModelTest {
         RxAndroidPlugins.setInitMainThreadSchedulerHandler { Schedulers.trampoline() }
         setupArch()
 
-        model = PersonModel()
-        viewModel = PersonViewModel(model)
+        getPersonUseCase = mock(GetPersonUseCaseContract::class.java)
+        updatePersonUseCase = mock(UpdatePersonUseCaseContract::class.java)
+        viewModel = PersonViewModel(getPersonUseCase, updatePersonUseCase)
     }
 
     private fun setupFailure() {
@@ -142,8 +156,9 @@ class PersonViewModelTest {
         RxAndroidPlugins.setInitMainThreadSchedulerHandler { Schedulers.trampoline() }
         setupArch()
 
-        model = mock(PersonModelContract::class.java)
-        viewModel = PersonViewModel(model)
+        getPersonUseCase = mock(GetPersonUseCaseContract::class.java)
+        updatePersonUseCase = mock(UpdatePersonUseCaseContract::class.java)
+        viewModel = PersonViewModel(getPersonUseCase, updatePersonUseCase)
     }
 
     private fun setupArch(){
@@ -189,6 +204,5 @@ class PersonViewModelTest {
     private fun anyPerson() = Person(anyString())
 
     private fun anyString() = ""
-
 
 }

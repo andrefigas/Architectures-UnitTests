@@ -1,10 +1,6 @@
 package dev.figas
 
-import dev.figas.data.mappers.PersonMapper
-import dev.figas.data.mappers.PersonMapperContract
-import dev.figas.data.repositories.PersonRepository
 import dev.figas.domain.models.Person
-import dev.figas.domain.usecases.GetPersonUseCase
 import dev.figas.domain.usecases.GetPersonUseCaseContract
 import dev.figas.domain.usecases.UpdatePersonUseCase
 import dev.figas.domain.usecases.UpdatePersonUseCaseContract
@@ -24,8 +20,6 @@ class PersonPresenterTest {
 
     private lateinit var getPersonUseCase : GetPersonUseCaseContract
     private lateinit var updatePersonUseCase: UpdatePersonUseCaseContract
-    private lateinit var mapper: PersonMapperContract
-    private lateinit var repo: PersonRepository
     private lateinit var view : PersonView
     private lateinit var presenter: PersonPresenter
 
@@ -37,6 +31,7 @@ class PersonPresenterTest {
     fun onFetchPersonSuccess(){
         //given
         setupSuccess()
+        `when`(getPersonUseCase.execute()).thenReturn(Single.just(Person("hello")))
 
         //when
         presenter.fetchPerson()
@@ -54,17 +49,19 @@ class PersonPresenterTest {
     fun onUpdatePersonSuccess(){
         //given
         setupSuccess()
+
         val name = "world"
 
+        `when`(updatePersonUseCase.execute(anyPerson())).thenReturn(Single.just(Person(name)))
         //when
-        presenter.injectPerson(name)
+        presenter.injectPerson(anyString())
 
         //then
         val captor  = ArgumentCaptor.forClass(String::class.java)
         inOrder(view)
         verify(view, times(1)).showLoading()
         verify(view, times(1)).hideLoading()
-        verify(view, times(1)).showSavedPerson(capture(captor, "anyString()"))
+        verify(view, times(1)).showSavedPerson(capture(captor, anyString()))
         Assert.assertEquals(captor.value, name)
     }
 
@@ -74,7 +71,7 @@ class PersonPresenterTest {
     fun fetchPersonFail() {
         //given
         setupFail()
-        `when`(getPersonUseCase.execute()).thenReturn(Single.error(Throwable()))
+        `when`(getPersonUseCase.execute()).thenReturn(anySingleThrowable())
 
         //when
         presenter.fetchPerson()
@@ -91,7 +88,7 @@ class PersonPresenterTest {
         //given
         setupFail()
         val name = "world"
-        `when`(updatePersonUseCase.execute(Person(name))).thenReturn(Single.error(Throwable()))
+        `when`(updatePersonUseCase.execute(Person(name))).thenReturn(anySingleThrowable())
 
         //when
         presenter.injectPerson(name)
@@ -111,7 +108,7 @@ class PersonPresenterTest {
 
         //given
         `when`(getPersonUseCase.execute()).thenReturn(
-            Single.just(Person("")).delay(1, TimeUnit.SECONDS)
+            anySinglePerson().delay(1, TimeUnit.SECONDS)
         )
 
         //when
@@ -129,7 +126,7 @@ class PersonPresenterTest {
 
         //given
         `when`(updatePersonUseCase.execute(Person(""))).thenReturn(
-            Single.just(Person("")).delay(1, TimeUnit.SECONDS)
+            anySinglePerson().delay(1, TimeUnit.SECONDS)
         )
 
         //when
@@ -148,10 +145,8 @@ class PersonPresenterTest {
         RxAndroidPlugins.setInitMainThreadSchedulerHandler { Schedulers.trampoline() }
 
         view = mock(PersonView::class.java)
-        mapper = PersonMapper()
-        repo = PersonRepository(mapper)
-        getPersonUseCase = GetPersonUseCase(repo)
-        updatePersonUseCase = UpdatePersonUseCase(repo)
+        getPersonUseCase = mock(GetPersonUseCaseContract::class.java)
+        updatePersonUseCase = mock(UpdatePersonUseCaseContract::class.java)
         presenter = PersonPresenter(view, getPersonUseCase, updatePersonUseCase)
     }
 
@@ -160,8 +155,6 @@ class PersonPresenterTest {
         RxAndroidPlugins.setInitMainThreadSchedulerHandler { Schedulers.trampoline() }
 
         view = mock(PersonView::class.java)
-        mapper = PersonMapper()
-        repo = PersonRepository(mapper)
         getPersonUseCase = mock(GetPersonUseCaseContract::class.java)
         updatePersonUseCase = mock(UpdatePersonUseCase::class.java)
         presenter = PersonPresenter(view, getPersonUseCase, updatePersonUseCase)
@@ -171,10 +164,8 @@ class PersonPresenterTest {
         RxAndroidPlugins.setInitMainThreadSchedulerHandler { Schedulers.trampoline() }
 
         view = mock(PersonView::class.java)
-        mapper = PersonMapper()
-        repo = PersonRepository(mapper)
         getPersonUseCase = mock(GetPersonUseCaseContract::class.java)
-        updatePersonUseCase = mock(UpdatePersonUseCase::class.java)
+        updatePersonUseCase = mock(UpdatePersonUseCaseContract::class.java)
         presenter = PersonPresenter(view, getPersonUseCase, updatePersonUseCase)
     }
 
@@ -183,5 +174,15 @@ class PersonPresenterTest {
     private fun captureString(captor: ArgumentCaptor<String>): String = captor.capture() ?: ""
 
     private fun <T> capture(captor: ArgumentCaptor<T>, defaultValue : T): T = captor.capture() ?: defaultValue
+
+    private fun anySingleThrowable() : Single<Person> = Single.error(anyThrowable())
+
+    private fun anyThrowable() = Throwable()
+
+    private fun anySinglePerson() = Single.just(anyPerson())
+
+    private fun anyPerson() = Person(anyString())
+
+    private fun anyString() = ""
 
 }
